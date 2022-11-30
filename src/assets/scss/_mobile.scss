@@ -1,0 +1,50 @@
+@import "./variables";
+
+@media screen and (max-width: 991px) {
+  .f-layout {
+    .f-header {
+      padding: 1rem 0 !important;
+      display: flex !important;
+      .header-collapse-toggler {
+        // position: absolute;
+        // top: 1.25rem;
+        // right: 0;
+      }
+      .f-logo {
+        position: relative;
+        top: 0.5rem;
+      }
+      .f-logo.f-mobile {
+        display: none !important;
+      }
+      .f-header-items {
+        // width: auto;
+      }
+      .f-btn-wrap {
+        // flex-direction: column;
+        // width: 100%;
+        margin-left: auto !important;
+        // margin-right: 2rem;
+        .f-btn-info {
+          padding: 0.45rem 0.5rem;
+          // order: 1;
+        }
+        .f-btn {
+          padding: 0.75rem 0.5rem;
+          flex: auto !important;
+        }
+      }
+    }
+  }
+}
+@media screen and (max-width: 480px) {
+  .f-layout {
+    .f-header {
+      .f-btn-wrap {
+        .f-btn-info {
+          display: none !important;
+        }
+      }
+    }
+  }
+}

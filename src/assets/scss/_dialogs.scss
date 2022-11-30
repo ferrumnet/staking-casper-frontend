@@ -1,0 +1,23 @@
+@import "./variables";
+
+.f-dialog {
+  &.connect-wallet-dialog {
+    ul {
+      li {
+        &:hover {
+          .f-typo {
+            color: white !important;
+          }
+        }
+      }
+    }
+    hr {
+      border: 1px solid #eaeaea !important;
+      margin: 1rem 0;
+    }
+  }
+}
+
+.zHigher {
+  z-index: 99999999;
+}
