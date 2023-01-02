@@ -1,0 +1,33 @@
+@import "./variables";
+
+.f-card {
+  padding: 2rem;
+}
+.card-connect {
+  .staking-time-left {
+    margin-top: 6rem;
+    svg {
+      margin-right: 1rem;
+    }
+  }
+}
+
+.card-maturity {
+  .countdown-timer {
+    .timer-block {
+      margin: 0 auto;
+    }
+  }
+}
+.card-staking-status {
+  .f-icon {
+    max-width: 45px;
+    height: 45px;
+    margin: 0 auto;
+    border: 2px solid #ffffff;
+    border-radius: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}

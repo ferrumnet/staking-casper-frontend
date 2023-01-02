@@ -1,0 +1,18 @@
+@import "./variables";
+
+.f-btn-wrap {
+  .f-btn-info {
+    padding: 0.45rem 1.5rem;
+    // min-height: 50px;
+  }
+}
+.f-btn {
+  font-size: 1rem;
+  padding: 0.75rem 1.5rem;
+  &.f-btn-primary {
+    font-weight: 600;
+    background: $themePrimaryColor;
+    border-color: $themePrimaryColor;
+    color: #272930;
+  }
+}
