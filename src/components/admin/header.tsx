@@ -24,7 +24,7 @@ import AddressSelector from "../../dialogs/AddressSelector";
 import { useParams } from "react-router";
 import TxProcessingDialog from "../../dialogs/TxProcessingDialog";
 
-const RPC_API = "http://44.208.234.65:7777/rpc";
+const RPC_API = "https://rpc.testnet.casperlabs.io/rpc";
 const STATUS_API = "http://159.65.203.12:8888";
 
 const casperService = new CasperServiceByJsonRPC(RPC_API);
@@ -43,9 +43,12 @@ export const Header = () => {
   const selectedAccount: { address?: string } = {};
 
   const connectWallet = async () => {
-    await window.casperlabsHelper.requestConnection()
+    //@ts-ignore
+    const casperWalletProvider = await window.CasperWalletProvider;    
+    const provider = casperWalletProvider();
+    await provider.requestConnection()
 
-    const isConnected = await window.casperlabsHelper.isConnected();
+    const isConnected = await provider.isConnected();
 
     if (isConnected) {
       setLoading(true)
@@ -57,16 +60,30 @@ export const Header = () => {
   };
 
   const disconnectWallet = async () => {
-    window.casperlabsHelper.disconnectFromSite();
+    //@ts-ignore
+    const casperWalletProvider = await window.CasperWalletProvider;    
+    const provider = casperWalletProvider();
+    provider.disconnectFromSite();
     await resetWallet()(dispatch)
   };
 
   async function AccountInformation() {
-    const isConnected = await window.casperlabsHelper.isConnected();
+    //@ts-ignore
+    const casperWalletProvider = await window.CasperWalletProvider;    
+    const provider = casperWalletProvider();
+    await provider.requestConnection()
+
+    const isConnected = await provider.isConnected();
+
 
     if (isConnected) {
       try {
-        const publicKey = await window.casperlabsHelper.getActivePublicKey();
+        //@ts-ignore
+        const casperWalletProvider = await window.CasperWalletProvider;    
+        const provider = casperWalletProvider();
+        await provider.requestConnection()
+
+        const publicKey = await provider.getActivePublicKey();
         console.log(publicKey, 'stakingIdstakingId');
         //textAddress.textContent += publicKey;
 

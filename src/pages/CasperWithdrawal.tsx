@@ -53,10 +53,13 @@ export const CasperWithdrawal = () => {
   );
 
   async function AccountInformation() {
-    const isConnected = await window.casperlabsHelper.isConnected();
-    console.log(isConnected, connection, 'isConnectedisConnected')
+    //@ts-ignore
+    const casperWalletProvider = await window.CasperWalletProvider;    
+    const provider = casperWalletProvider();
+    const isConnected = await provider.isConnected();
+
     if (isConnected) {
-        const publicKey = await window.casperlabsHelper.getActivePublicKey();
+        const publicKey = await provider.getActivePublicKey();
         console.log(publicKey);
         //textAddress.textContent += publicKey;
 
@@ -81,9 +84,11 @@ export const CasperWithdrawal = () => {
 
 
   const connectWallet = async () => {
-    await window.casperlabsHelper.requestConnection()
+    //@ts-ignore
+    const casperWalletProvider = await window.CasperWalletProvider;    
+    const provider = casperWalletProvider();
 
-    const isConnected = await window.casperlabsHelper.isConnected();
+    const isConnected = await provider.isConnected();
 
     if (isConnected) {
       await AccountInformation();

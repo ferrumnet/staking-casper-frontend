@@ -20,7 +20,7 @@ import TxProcessingDialog from "../dialogs/TxProcessingDialog";
 // }
 
 
-const RPC_API = "http://44.208.234.65:7777/rpc";
+const RPC_API = "https://rpc.testnet.casperlabs.io/rpc";
 
 const casperService = new CasperServiceByJsonRPC(RPC_API);
 const casperClient = new CasperClient(RPC_API);
@@ -34,7 +34,7 @@ const WidthCardSubmit = () => {
   const [amount, setAmount] = useState();
   const [processMsg, setProcessMsg] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const { connect: { selectedAccount, isWalletConnected, signedAddresses, config } } = useSelector((state: any) => state.casper);
+  const { connect: { selectedAccount, isWalletConnected, signedAddresses, tokenInfo } } = useSelector((state: any) => state.casper);
 
   useEffect(() => {
     if (
@@ -62,6 +62,9 @@ const WidthCardSubmit = () => {
       selectedAccount
     ) {
       try {
+        //@ts-ignore
+        const casperWalletProvider = await window.CasperWalletProvider;    
+        const provider = casperWalletProvider();
         if (amount && Number(amount) > 0) {
           const publicKeyHex = selectedAccount?.address;
           const senderPublicKey = CLPublicKey.fromHex(publicKeyHex);
@@ -73,11 +76,11 @@ const WidthCardSubmit = () => {
 
           const args = RuntimeArgs.fromMap({
             "amount": CLValueBuilder.u256(amount),
-            'staking_contract_package_hash': CLValueBuilder.string(`63752072046fa449810f4151d8998a305f6949321225a01ff0b576968643f1e4`)
+            'staking_contract_package_hash': CLValueBuilder.string(`contract-package-wasm${tokenInfo.contract_package_hash}`)
           });
 
           const session = DeployUtil.ExecutableDeployItem.newStoredContractByHash(
-            decodeBase16('d6428a288740e81ab6f30e792b958ae8b755dc369747f120f669656219f81994'),
+            decodeBase16(tokenInfo.stacking_contract_package_has),
             'withdraw',
             args
           );
@@ -88,11 +91,17 @@ const WidthCardSubmit = () => {
 
           const deployJson: any = DeployUtil.deployToJson(deploy);
 
-          Signer.sign(deployJson, publicKeyHex).then(async (signedDeployJson) => {
-            const signedDeploy = DeployUtil.deployFromJson(signedDeployJson);
-            console.log(signedDeploy)
-            if (signedDeploy.ok) {
-              const res = await casperClient.putDeploy(signedDeploy.val);
+          provider.sign(JSON.stringify(deployJson), publicKeyHex).then(async (signedDeployJson: any) => {
+            console.log(signedDeployJson);
+            const signedDeploy = DeployUtil.setSignature(
+              deploy,
+              signedDeployJson.signature,
+              CLPublicKey.fromHex(publicKeyHex)
+            );
+            console.log(signedDeploy, 'signedDeploysignedDeploy')
+            // @ts-ignore
+            if (!signedDeploy.cancelled) {
+              const res = await casperClient.putDeploy(signedDeploy);
               console.log(res, 'resres');
               setProcessMsg(res)
               setLoading(false)

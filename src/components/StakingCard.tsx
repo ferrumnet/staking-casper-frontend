@@ -24,9 +24,9 @@ import { CasperClient, CasperServiceByJsonRPC, CLKey, CLPublicKey, CLValue,
 import toast from "react-hot-toast";
 import { connectWallet as connectWalletDispatch } from '../redux/casper/casperActions';
 import { getStakingInfo } from "../utils/DateUtil";
-import { convertHashStrToHashBuff, setContractHash } from "../utils/stringParser";
+import { convertHashStrToHashBuff, getTokenHash, setContractHash } from "../utils/stringParser";
 
-const RPC_API = "http://44.208.234.65:7777/rpc";
+const RPC_API = "https://rpc.testnet.casperlabs.io/rpc";
 
 const casperService = new CasperServiceByJsonRPC(RPC_API);
 const casperClient = new CasperClient(RPC_API);
@@ -47,107 +47,110 @@ const StakingCard = () => {
   const { connect: { config, selectedAccount, signedAddresses } } = useSelector((state: any) => state.casper);
 
   const connectWallet = async () => {
-    await window.casperlabsHelper.requestConnection()
+    //@ts-ignore
+    const casperWalletProvider = await window.CasperWalletProvider;    
+    const provider = casperWalletProvider();
+    const isConnected = await provider.isConnected();
 
-    const isConnected = await window.casperlabsHelper.isConnected();
 
     if (isConnected) {
       await AccountInformation();
     }   
   };
 
-  const performWithdraw = async () => {
-    if (
-      isWalletConnected &&
-      selectedAccount
-    ) {
-      console.log('hellooooo');
-      setLoading(true)
-      try {
-        // console.log(selectedAccount?.address, Number(amount));
-        if (amount && Number(amount) > 0) {
-          const publicKeyHex = selectedAccount?.address;
-          const senderPublicKey = CLPublicKey.fromHex(publicKeyHex);
-
-          const deployParams = new DeployUtil.DeployParams(
-            senderPublicKey,
-            'casper-test'
-          );
-
-          const args = RuntimeArgs.fromMap({
-            "amount": CLValueBuilder.u256(amount),
-            'staking_contract_package_hash': CLValueBuilder.string(`63752072046fa449810f4151d8998a305f6949321225a01ff0b576968643f1e4`)
-          });
-
-          const session = DeployUtil.ExecutableDeployItem.newStoredContractByHash(
-            decodeBase16('bece653339b33f9b7d6ada25f5ef38ed27ac8aeb9d21a8246233b7fdf3e9c559'),
-            'withdraw',
-            args
-          );
-
-          const payment = DeployUtil.standardPayment(50000000000);
-
-          const deploy = DeployUtil.makeDeploy(deployParams, session, payment);
-
-          const deployJson: any = DeployUtil.deployToJson(deploy);
-        
-          Signer.sign(deployJson, publicKeyHex).then(async (signedDeployJson) => {
-            const signedDeploy = DeployUtil.deployFromJson(signedDeployJson);
-            console.log(signedDeploy)
-            if (signedDeploy.ok) {
-              const res = await casperClient.putDeploy(signedDeploy.val);
-              console.log(res, 'resres');
-              setProcessMsg(res)
-              setLoading(false)
-              setShowConfirmation(true)
-            }
-            
-          });
-          // navigate.push(`/${config._id}`);
-          //toast.success(`${amount} tokens are staked successfully`);
-        } else {
-          toast.error("Amount must be greater than 0");
-        }
-      } catch (e) {
-        console.log("ERROR : ", e);
-        toast.error("An error occured please see console for details");
-        navigate.push(`/${config._id}`);
-      } finally {
-        //setLoading(false)
-      }
-
-    } else {
-      console.log("heelelll")
-      navigate.push(`/${config._id}`);
-    }
-  };
-
-
   async function AccountInformation() {
-    const isConnected = await window.casperlabsHelper.isConnected();
-    console.log(isConnected, connection, 'isConnectedisConnected')
+    //@ts-ignore
+    const casperWalletProvider = await window.CasperWalletProvider;    
+    const provider = casperWalletProvider();
+    const isConnected = await provider.isConnected();
+
     if (isConnected) {
-        const publicKey = await window.casperlabsHelper.getActivePublicKey();
-        console.log(publicKey);
+      try {
+        const publicKey = await provider.getActivePublicKey();
+        console.log(publicKey, stakingId, 'stakingIdstakingId');
         //textAddress.textContent += publicKey;
 
         const latestBlock = await casperService.getLatestBlockInfo();
-        console.log(latestBlock);
-
         const root = await casperService.getStateRootHash(latestBlock?.block?.hash);
-        console.log(latestBlock, root, 'rootroot')
 
-        await connectWalletDispatch([{
-          "address": publicKey
-        }])(dispatch)
+        await connectWalletDispatch([ { "address": publicKey } ])(dispatch)
+
         const balanceUref = await casperService.getAccountBalanceUrefByPublicKey(root, CLPublicKey.fromHex(publicKey));
-                
+        
         // @ts-ignore
         const balance = await casperService.getAccountBalance(latestBlock?.block?.header?.state_root_hash, balanceUref);
-        console.log(balance.toString())
-        //textBalance.textContent = `PublicKeyHex ${balance.toString()}`;
+
+        // const args = RuntimeArgs.fromMap({});
+        // await contract.setContractHash('hash-56c7117eaea62cb89e94479f45a12c4e8bd9cfc0f427dd0ff3e221a546deff63')
+        // const payment = DeployUtil.standardPayment(50000000000);
+        // const qu = await contract.queryContractDictionary('staking_ends', 'uref-2bfbe059dc2e7dab956c82404e2dc5a8ea6d6ce3cc15287aaaad7727a3a109ad-007')
+        // console.log(qu);
+        // @ts-ignore
+        // const balances = await casperService.getBlockState(
+        //   //@ts-ignore
+        //   latestBlock?.block?.header?.state_root_hash,
+        //   "hash-e222974816f70ca96fc4002a696bb552e2959d3463158cd82a7bfc8a94c03473",
+        //   ["contract_hash"]
+        // );
+        // console.log(balances.toString())
+
+        
+        const info = await casperService.getDeployInfo(
+          stakingId
+        )
+
+        // @ts-ignore
+        const infoArguments = (info.deploy.session.ModuleBytes.args || []).find(
+          (e: any) => e[0] === 'erc20_contract_package_hash'
+        )
+
+        if (infoArguments) {
+          const token_contract = infoArguments[1].parsed.Hash.split('-')[1]
+          const token = getTokenHash(token_contract);
+          const tokenName = await casperService.getBlockState(
+            //@ts-ignore
+            latestBlock?.block?.header?.state_root_hash,
+            `hash-${token}`,
+            ['name']
+          )
+  
+          const tokenSymbol = await casperService.getBlockState(
+             //@ts-ignore
+             latestBlock?.block?.header?.state_root_hash,
+             `hash-${token}`,
+             ['symbol']
+          )
+  
+          if(info.deploy.session) {
+            //@ts-ignore
+            const transforms = info.execution_results[0].result.Success?.effect.transforms;
+            const stacking_contract_package_hash = transforms.find((e: any) => e.transform.AddKeys && e.transform.AddKeys[0].name === 'stacking_contract_package_hash')
+            const contract_package_hash = transforms.find((e: any) => e.transform.AddKeys && e.transform.AddKeys[0].name === 'contract_package_hash')
+            // @ts-ignore
+            configLoaded({
+              // @ts-ignore
+              config: info.deploy.session.ModuleBytes.args,
+              contract_package_hash: contract_package_hash,
+              stacking_contract_package_hash: stacking_contract_package_hash,
+              tokenInfo: {
+                tokenSymbol: tokenSymbol.CLValue?.data,
+                tokenName: tokenName.CLValue?.data
+              }
+            })(dispatch);
+            //@ts-ignore
+            signed(info.deploy.approvals)(dispatch)
+            //@ts-ignore
+            console.log(info.deploy, 'infoooo');
+          }
+        }
+        
+      } catch (error) {
+        toast.error(`An error occured Error: ${error}`);
+        console.log(error, 'Error occured')
+      }
     }
   }
+
 
   const stakingInfo = getStakingInfo( 
     connection?.config?.stakingEnds,

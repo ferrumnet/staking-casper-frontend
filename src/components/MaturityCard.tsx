@@ -13,7 +13,7 @@ import toast from "react-hot-toast";
 import { CasperClient, CasperServiceByJsonRPC, CLPublicKey, CLValueBuilder, decodeBase16, DeployUtil, RuntimeArgs, Signer } from "casper-js-sdk";
 import { useHistory } from "react-router";
 
-const RPC_API = "http://44.208.234.65:7777/rpc";
+const RPC_API = "https://rpc.testnet.casperlabs.io/rpc";
 
 const casperService = new CasperServiceByJsonRPC(RPC_API);
 const casperClient = new CasperClient(RPC_API);

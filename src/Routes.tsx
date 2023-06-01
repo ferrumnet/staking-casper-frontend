@@ -1,29 +1,45 @@
 import React from "react";
 import { Route, Switch } from "react-router";
-import { FMain, FGrid } from "ferrum-design-system";
-import Header from "./header/header";
-import CasperSwap from "./pages/CasperSwap";
-import { Withdrawals } from "./components/Withdrawals";
+import { LandingPage } from "./pages/Landing/Landing";
+import AdminDashboard from "./pages/Admin/admin";
 
-const BaseRoutes = () => {
+import { FLayout, FMain, FLoader, FContainer } from "ferrum-design-system";
+import Header from "./header/header";
+
+const Wrapper = () => {
   return (
     <>
       <Header />
       <FMain>
-        <Switch>
-          <Route path="/withdraw" component={() => (
-            <FGrid spacing={13}>
-              <Withdrawals /> 
-            </FGrid>
-          )}></Route>
-          <Route path="*" component={() =>
-            <FGrid spacing={13}>
-             <CasperSwap /> 
-            </FGrid>
-          }></Route>
-        </Switch>
+        <LandingPage />
       </FMain>
     </>
+  )
+}
+
+const Admin = () => {
+  return (
+    <>
+      <Header />
+      <FMain>
+        <AdminDashboard />
+      </FMain>
+    </>
+  )
+}
+
+
+const BaseRoutes = () => {
+  return (
+    <Switch>
+      <Route path="/admin" component={
+        AdminDashboard
+      }></Route>
+      <Route path="/:stakingId" component={
+        Wrapper
+      }></Route>
+      
+    </Switch>
   );
 };
 export default BaseRoutes;
